@@ -19,7 +19,7 @@ import java.util.stream.Collectors;
 
 public class Util {
     private static Path defaultLogDir = Paths.get(System.getProperty("user.dir"), "logs");
-    private static final double EPSILON = 0.00001;
+    private static final double EPSILON = 0.00001;  // for comparison of doubles
 
     public static void insertList(StatelessSession session, List list) {
         for (Object element : list) {
@@ -46,7 +46,7 @@ public class Util {
     }
 
     public static Logger getClassLogger(Class c, boolean consoleOutput, Path logFileDir) throws IOException {
-        // ensure that log dir exists
+        // ensure that log directory exists
         try {
             if (!Files.exists(logFileDir)) {
                 Files.createDirectory(logFileDir);
@@ -85,8 +85,8 @@ public class Util {
         return new ArrayList<>();
     }
 
-    // beginIndex inclusive, endIndex exclusive
     public static String replaceStringAt(String str, int beginIndex, int endIndex, String replacement) {
+        // beginIndex inclusive, endIndex exclusive
         return str.substring(0, beginIndex) + replacement + str.substring(endIndex, str.length());
     }
 
@@ -103,7 +103,7 @@ public class Util {
             if (Files.isDirectory(dir)) {
                 FileUtils.deleteDirectory(dir.toFile());
             } else {
-                throw new IllegalArgumentException("Not a directory.");
+                throw new IllegalArgumentException("Not a directory: " + dir);
             }
         }
         Files.createDirectories(dir);
@@ -120,8 +120,8 @@ public class Util {
         Files.delete(file);
     }
 
-    // see http://www.cygnus-software.com/papers/comparingfloats/Comparing%20floating%20point%20numbers.htm
     public static boolean equals(double value1, double value2) {
+        // see http://www.cygnus-software.com/papers/comparingfloats/Comparing%20floating%20point%20numbers.htm
         return equals(value1, value2, EPSILON);
     }
 
