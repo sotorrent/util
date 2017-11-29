@@ -116,14 +116,13 @@ public class Util {
     }
 
     public static void deleteFileIfExists(Path file) throws IOException {
-        if (!Files.exists(file)) {
-            throw new IllegalArgumentException("File does not exist: " + file);
-        }
-        if (Files.isDirectory(file)) {
-            throw new IllegalArgumentException("File is a directory: " + file);
-        }
+        if (Files.exists(file)) {
+            if (Files.isDirectory(file)) {
+                throw new IllegalArgumentException("File is a directory: " + file);
+            }
 
-        Files.delete(file);
+            Files.delete(file);
+        }
     }
 
     public static void createDirectory(Path dir) throws IOException {
