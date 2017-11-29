@@ -1,4 +1,4 @@
-package de.unitrier.st.soposthistory.util;
+package de.unitrier.st.util;
 
 import org.apache.commons.io.FileUtils;
 import org.hibernate.StatelessSession;

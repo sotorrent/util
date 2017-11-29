@@ -3,9 +3,9 @@
     <modelVersion>4.0.0</modelVersion>
 
     <name>SOPostHistoryUtil</name>
-    <groupId>de.unitrier.st.soposthistory</groupId>
+    <groupId>de.unitrier.st</groupId>
     <artifactId>util</artifactId>
-    <version>1.0</version>
+    <version>1.0.0</version>
     <url>https://github.com/sotorrent/util</url>
 
     <properties>
