@@ -126,6 +126,10 @@ public class Util {
         Files.delete(file);
     }
 
+    public static void createDirectory(Path dir) throws IOException {
+        Files.createDirectories(dir);
+    }
+
     public static boolean equals(double value1, double value2) {
         // see http://www.cygnus-software.com/papers/comparingfloats/Comparing%20floating%20point%20numbers.htm
         return equals(value1, value2, EPSILON);
