@@ -97,6 +97,12 @@ public class Util {
         }
     }
 
+    public static void ensureDirectoryExists(Path dir) {
+        if (!Files.exists(dir) || !Files.isDirectory(dir)) {
+            throw new IllegalArgumentException("Directory does not exist: " + dir);
+        }
+    }
+
     public static void ensureEmptyDirectoryExists(Path dir) throws IOException {
         // ensure that output dir exists, but is empty
         if (Files.exists(dir)) {
