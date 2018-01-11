@@ -159,4 +159,11 @@ public class Util {
         System.setOut(out);
         System.setErr(out);
     }
+
+    public static String exceptionStackTraceToString(Exception e) {
+        StringWriter stringWriter = new StringWriter();
+        e.printStackTrace(new PrintWriter(stringWriter));
+        return stringWriter.toString();
+    }
+
 }
