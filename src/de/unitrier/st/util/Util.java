@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.logging.FileHandler;
@@ -176,5 +177,21 @@ public class Util {
             subListIndex++;
         }
         return subLists;
+    }
+
+    public static String setToQueryString(Set<Byte> valueSet) {
+        // convert set into array
+        Byte[] values = new Byte[valueSet.size()];
+        valueSet.toArray(values);
+
+        // concatenate values into string for SQL query
+        StringBuilder valuesString = new StringBuilder();
+        for (int i=0; i<values.length-1; i++) {
+            valuesString.append(values[i]).append(",");
+        }
+        valuesString.append(values[values.length - 1]);
+
+        // return final string
+        return valuesString.toString();
     }
 }
