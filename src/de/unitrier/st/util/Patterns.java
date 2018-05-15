@@ -1,5 +1,6 @@
 package de.unitrier.st.util;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class Patterns {
@@ -20,4 +21,45 @@ public class Patterns {
 
     // pattern to extract path from URL
     public static final Pattern path = Pattern.compile("(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)");
+
+    public static String extractProtocol(String url) {
+        // protocol
+        Matcher protocolMatcher = Patterns.protocol.matcher(url);
+        if (protocolMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of protocol failed for URL: " + url);
+        }
+        return protocolMatcher.group(1);
+    }
+
+    public static String extractCompleteDomain(String url) {
+        Matcher completeDomainMatcher = Patterns.completeDomain.matcher(url);
+        if (!completeDomainMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of complete domain failed for URL: " + url);
+        }
+        return completeDomainMatcher.group(1);
+    }
+
+    public static String extractRootDomain(String completeDomain) {
+        Matcher rootDomainMatcher = Patterns.rootDomain.matcher(completeDomain);
+        if (!rootDomainMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of root domain failed for URL: " + url);
+        }
+        return rootDomainMatcher.group(1);
+    }
+
+    public static String extractPath(String url) {
+        Matcher pathMatcher = Patterns.path.matcher(url);
+        if (!pathMatcher.find()) {
+            // don't change this, needed to set database column to null (so-posthistory-extractor)
+            return null;
+        }
+
+        String path = pathMatcher.group(1);
+        // remove trailing slash
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length()-1);
+        }
+
+        return path;
+    }
 }
