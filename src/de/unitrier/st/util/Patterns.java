@@ -25,7 +25,7 @@ public class Patterns {
     public static String extractProtocol(String url) {
         // protocol
         Matcher protocolMatcher = Patterns.protocol.matcher(url);
-        if (protocolMatcher.find()) {
+        if (!protocolMatcher.find()) {
             throw new IllegalArgumentException("Extraction of protocol failed for URL: " + url);
         }
         return protocolMatcher.group(1);
