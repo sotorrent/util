@@ -197,7 +197,7 @@ public class Util {
         return valuesString.toString();
     }
 
-    public HttpURLConnection openHttpConnection(String url, String requestMethod, boolean followRedirects) {
+    public static HttpURLConnection openHttpConnection(String url, String requestMethod, boolean followRedirects) {
         try {
             URL urlObj = new URL(url);
             HttpURLConnection.setFollowRedirects(followRedirects);
