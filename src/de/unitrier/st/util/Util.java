@@ -197,23 +197,18 @@ public class Util {
         return valuesString.toString();
     }
 
-    public static HttpURLConnection openHttpConnection(String url, String requestMethod, boolean followRedirects) {
-        try {
-            URL urlObj = new URL(url);
-            HttpURLConnection.setFollowRedirects(followRedirects);
-            HttpURLConnection conn;
+    public static HttpURLConnection openHttpConnection(String url, String requestMethod, boolean followRedirects) throws IOException {
+        URL urlObj = new URL(url);
+        HttpURLConnection.setFollowRedirects(followRedirects);
+        HttpURLConnection conn;
 
-            if (!url.startsWith("http")) {
-                throw new IllegalArgumentException("Protocol is neither http nor https.");
-            }
-
-            conn = (HttpURLConnection) urlObj.openConnection();
-            conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
-            conn.connect();
-            return conn;
-        } catch (IOException e) {
-            e.printStackTrace();
+        if (!url.startsWith("http")) {
+            throw new IllegalArgumentException("Protocol is neither http nor https.");
         }
-        return null;
+
+        conn = (HttpURLConnection) urlObj.openConnection();
+        conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
+        conn.connect();
+        return conn;
     }
 }
