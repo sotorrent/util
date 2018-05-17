@@ -4,8 +4,6 @@ import org.apache.commons.io.FileUtils;
 import org.hibernate.StatelessSession;
 
 import java.io.*;
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -195,21 +193,5 @@ public class Util {
 
         // return final string
         return valuesString.toString();
-    }
-
-    public static HttpURLConnection openHttpConnection(String url,
-                                                       String requestMethod,
-                                                       boolean followRedirects,
-                                                       int timeout) throws IOException {
-        if (!url.startsWith("http")) {
-            throw new IllegalArgumentException("Protocol is neither http nor https.");
-        }
-
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
-        conn.setInstanceFollowRedirects(followRedirects);
-        conn.setConnectTimeout(timeout);
-        conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
-        conn.connect();
-        return conn;
     }
 }
