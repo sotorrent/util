@@ -8,19 +8,19 @@ public class Patterns {
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
     public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:/[\\w.,@^=%&:/~+-]+)?(?:\\?[\\w.,@?^=%&:/~+#-]+)?(?:#[\\w.,@?^=%&:/~+#-]+)?";
     // the regex string is needed for the Link classes in project so-posthistory-extractor
-    public static final Pattern url = Pattern.compile(urlRegex);
+    public static final Pattern url = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
     // pattern to extract protocol from URL
-    public static final Pattern protocol = Pattern.compile("^(https?|ftp)");
+    public static final Pattern protocol = Pattern.compile("^(https?|ftp)", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract domain (including subdomains) from URL
-    public static final Pattern completeDomain = Pattern.compile("(?:https?|ftp)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))");
+    public static final Pattern completeDomain = Pattern.compile("(?:https?|ftp)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract root domain from domain string
-    public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$");
+    public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract path from URL
-    public static final Pattern path = Pattern.compile("(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)");
+    public static final Pattern path = Pattern.compile("(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)", Pattern.CASE_INSENSITIVE);
 
     public static String extractProtocol(String url) {
         // protocol
