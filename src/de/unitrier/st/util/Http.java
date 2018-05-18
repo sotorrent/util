@@ -1,5 +1,6 @@
 package de.unitrier.st.util;
 
+import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -9,15 +10,23 @@ public class Http {
                                                        String requestMethod,
                                                        boolean followRedirects,
                                                        int timeout) throws IOException {
-        if (!url.startsWith("http")) {
-            throw new IllegalArgumentException("Protocol is neither http nor https.");
+        HttpURLConnection conn;
+
+        if (url.startsWith("http://")) {
+            conn = (HttpURLConnection) new URL(url).openConnection();
+        } else if (url.startsWith("https://")) {
+            conn = (HttpsURLConnection) new URL(url).openConnection();
+        } else {
+            throw new IllegalArgumentException("Protocol is not http.");
         }
 
-        HttpURLConnection conn = (HttpURLConnection) new URL(url).openConnection();
+        // some API return a "403 Forbidden" if no user agent is specified
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:10.0) Gecko/20100101 Firefox/10.0");
         conn.setInstanceFollowRedirects(followRedirects);
         conn.setConnectTimeout(timeout);
         conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
         conn.connect();
+
         return conn;
     }
 
@@ -29,5 +38,19 @@ public class Http {
     public static boolean isRedirect(HttpURLConnection conn) throws IOException {
         // see https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#3xx_Redirection
         return (conn.getResponseCode() >= 300 && conn.getResponseCode() <= 308);
+    }
+
+    public static void checkRateLimitExceeded(HttpURLConnection conn) throws IOException, RateLimitExceededException {
+        if (conn.getResponseCode() == 403) {
+            throw new RateLimitExceededException(conn.getResponseCode() + ": " + conn.getResponseMessage());
+        }
+    }
+
+    public static class RateLimitExceededException extends RuntimeException {
+        public RateLimitExceededException() { }
+
+        public RateLimitExceededException(String message) {
+            super(message);
+        }
     }
 }
