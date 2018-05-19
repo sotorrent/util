@@ -1,11 +1,13 @@
 package de.unitrier.st.util;
 
+import de.unitrier.st.util.exceptions.RateLimitExceededException;
+
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 
-public class Http {
+public class HttpUtils {
     public static HttpURLConnection openHttpConnection(String url,
                                                        String requestMethod,
                                                        boolean followRedirects,
@@ -43,14 +45,6 @@ public class Http {
     public static void checkRateLimitExceeded(HttpURLConnection conn) throws IOException, RateLimitExceededException {
         if (conn.getResponseCode() == 403) {
             throw new RateLimitExceededException(conn.getResponseCode() + ": " + conn.getResponseMessage());
-        }
-    }
-
-    public static class RateLimitExceededException extends RuntimeException {
-        public RateLimitExceededException() { }
-
-        public RateLimitExceededException(String message) {
-            super(message);
         }
     }
 }

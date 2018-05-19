@@ -1,4 +1,4 @@
-package de.unitrier.st.util;
+package de.unitrier.st.util.exceptions;
 
 public class IllegalSimilarityValueException extends RuntimeException {
     public IllegalSimilarityValueException() { }

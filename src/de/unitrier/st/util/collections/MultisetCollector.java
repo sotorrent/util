@@ -1,4 +1,4 @@
-package de.unitrier.st.util;
+package de.unitrier.st.util.collections;
 
 import com.google.common.collect.HashMultiset;
 import com.google.common.collect.Multiset;
