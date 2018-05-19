@@ -17,10 +17,7 @@ public class FileUtils {
         }
     }
 
-    public static void ensureDirectoryExists(Path dir) throws IllegalArgumentException, IOException {
-        if (!Files.isDirectory(dir)) {
-            throw new IllegalArgumentException("Directory does not exist: " + dir);
-        }
+    public static void ensureDirectoryExists(Path dir) throws IOException {
         if (!Files.exists(dir)) {
             Files.createDirectory(dir);
         }
