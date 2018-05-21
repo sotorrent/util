@@ -14,15 +14,15 @@ public class Patterns {
     public static final Pattern protocol = Pattern.compile("^(https?|ftp)", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract domain (including subdomains) from URL
-    public static final Pattern completeDomain = Pattern.compile("(?:https?|ftp)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))", Pattern.CASE_INSENSITIVE);
+    public static final Pattern completeDomain = Pattern.compile("^(?:https?|ftp)://([\\w_-]+(?:(?:\\.[\\w_-]+)+))", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract root domain from domain string
     public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract path from URL
-    public static final Pattern path = Pattern.compile("(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)", Pattern.CASE_INSENSITIVE);
+    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)", Pattern.CASE_INSENSITIVE);
 
-    public static String extractProtocol(String url) {
+    public static String extractProtocolFromUrl(String url) {
         // protocol
         Matcher protocolMatcher = Patterns.protocol.matcher(url);
         if (!protocolMatcher.find()) {
@@ -31,7 +31,7 @@ public class Patterns {
         return protocolMatcher.group(1);
     }
 
-    public static String extractCompleteDomain(String url) {
+    public static String extractCompleteDomainFromUrl(String url) {
         Matcher completeDomainMatcher = Patterns.completeDomain.matcher(url);
         if (!completeDomainMatcher.find()) {
             throw new IllegalArgumentException("Extraction of complete domain failed for URL: " + url);
@@ -39,7 +39,7 @@ public class Patterns {
         return completeDomainMatcher.group(1);
     }
 
-    public static String extractRootDomain(String completeDomain) {
+    public static String extractRootDomainFromCompleteDomain(String completeDomain) {
         Matcher rootDomainMatcher = Patterns.rootDomain.matcher(completeDomain);
         if (!rootDomainMatcher.find()) {
             throw new IllegalArgumentException("Extraction of root domain failed for URL: " + url);
@@ -47,7 +47,7 @@ public class Patterns {
         return rootDomainMatcher.group(1);
     }
 
-    public static String extractPath(String url) {
+    public static String extractPathFromUrl(String url) {
         Matcher pathMatcher = Patterns.path.matcher(url);
         if (!pathMatcher.find()) {
             // don't change this, needed to set database column to null (so-posthistory-extractor)
