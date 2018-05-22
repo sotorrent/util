@@ -1,4 +1,4 @@
-package de.unitrier.st.util;
+package org.sotorrent.util;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

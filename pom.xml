@@ -2,10 +2,10 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <name>SOPostHistoryUtil</name>
-    <groupId>de.unitrier.st</groupId>
+    <name>Util</name>
+    <groupId>org.sotorrent</groupId>
     <artifactId>util</artifactId>
-    <version>2.0.2</version>
+    <version>3.0.0</version>
     <url>https://github.com/sotorrent/util</url>
 
     <properties>
@@ -31,7 +31,7 @@
     <distributionManagement>
         <repository>
             <id>releases</id>
-            <url>file://${basedir}/releases/</url>
+            <url>file://${basedir}/../maven/</url>
         </repository>
     </distributionManagement>
 

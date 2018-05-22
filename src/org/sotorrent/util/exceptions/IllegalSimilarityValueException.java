@@ -1,4 +1,4 @@
-package de.unitrier.st.util.exceptions;
+package org.sotorrent.util.exceptions;
 
 public class IllegalSimilarityValueException extends RuntimeException {
     public IllegalSimilarityValueException() { }

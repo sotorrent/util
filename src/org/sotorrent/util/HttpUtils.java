@@ -1,6 +1,6 @@
-package de.unitrier.st.util;
+package org.sotorrent.util;
 
-import de.unitrier.st.util.exceptions.RateLimitExceededException;
+import org.sotorrent.util.exceptions.RateLimitExceededException;
 
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;

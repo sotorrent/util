@@ -1,4 +1,4 @@
-package de.unitrier.st.util;
+package org.sotorrent.util;
 
 public class MathUtils {
     private static final double EPSILON = 0.00001;  // for comparison of doubles

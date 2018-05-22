@@ -1,4 +1,4 @@
-package de.unitrier.st.util;
+package org.sotorrent.util;
 
 import org.hibernate.StatelessSession;
 
