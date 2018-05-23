@@ -42,8 +42,8 @@ public class HttpUtils {
         return (conn.getResponseCode() >= 300 && conn.getResponseCode() <= 308);
     }
 
-    public static void checkRateLimitExceeded(HttpURLConnection conn) throws IOException, RateLimitExceededException {
-        if (conn.getResponseCode() == 403) {
+    public static void checkTooManyRequests(HttpURLConnection conn) throws IOException, RateLimitExceededException {
+        if (conn.getResponseCode() == 429) {  // may also be 403
             throw new RateLimitExceededException(conn.getResponseCode() + ": " + conn.getResponseMessage());
         }
     }
