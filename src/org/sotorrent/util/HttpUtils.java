@@ -32,19 +32,35 @@ public class HttpUtils {
         return conn;
     }
 
-    public static boolean isSuccess(HttpURLConnection conn) throws IOException {
-        // see https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#2xx_Success
-        return (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 226);
-    }
-
-    public static boolean isRedirect(HttpURLConnection conn) throws IOException {
-        // see https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#3xx_Redirection
-        return (conn.getResponseCode() >= 300 && conn.getResponseCode() <= 308);
-    }
-
-    public static void checkTooManyRequests(HttpURLConnection conn) throws IOException, RateLimitExceededException {
-        if (conn.getResponseCode() == 429) {  // may also be 403
-            throw new RateLimitExceededException(conn.getResponseCode() + ": " + conn.getResponseMessage());
+    public static boolean success(HttpURLConnection conn)  {
+        boolean success;
+        try {
+            // see https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#2xx_Success
+            success = (conn.getResponseCode() >= 200 && conn.getResponseCode() <= 226);
+        } catch (IOException e) {
+            success = false;
         }
+        return success;
+    }
+
+    public static boolean redirect(HttpURLConnection conn)  {
+        boolean redirect;
+        try {
+            // see https://en.wikipedia.org/wiki/List_of_HTTP_status_codes#3xx_Redirection
+            redirect = (conn.getResponseCode() >= 300 && conn.getResponseCode() <= 308);
+        } catch (IOException e) {
+            redirect = false;
+        }
+        return redirect;
+    }
+
+    public static boolean tooManyRequests(HttpURLConnection conn) {
+        boolean tooManyRequests;
+        try {
+            tooManyRequests = (conn.getResponseCode() == 429);  // may also be 403
+        } catch (IOException e) {
+            tooManyRequests = false;
+        }
+        return tooManyRequests;
     }
 }
