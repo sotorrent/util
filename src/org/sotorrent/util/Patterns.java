@@ -19,8 +19,8 @@ public class Patterns {
     // pattern to extract root domain from domain string
     public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$", Pattern.CASE_INSENSITIVE);
 
-    // pattern to extract path from URL
-    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)", Pattern.CASE_INSENSITIVE);
+    // pattern to extract path (including fragment identifier) from URL
+    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(#[^#/]+)?", Pattern.CASE_INSENSITIVE);
 
     public static String extractProtocolFromUrl(String url) {
         // protocol
@@ -61,5 +61,15 @@ public class Patterns {
         }
 
         return path;
+    }
+
+    public static String extractFragmentIdentifierFromUrl(String url) {
+        Matcher pathMatcher = Patterns.path.matcher(url);
+        if (!pathMatcher.find()) {
+            // don't change this, needed to set database column to null (so-posthistory-extractor)
+            return null;
+        }
+
+        return pathMatcher.group(2);
     }
 }
