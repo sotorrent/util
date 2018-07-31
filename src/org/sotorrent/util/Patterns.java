@@ -31,6 +31,16 @@ public class Patterns {
         return protocolMatcher.group(1);
     }
 
+    public static String cleanUrl(String url) {
+        if (url.endsWith("/.") || url.endsWith("/,") || url.endsWith("/:")) {
+            url = url.substring(0, url.length()-1);
+        }
+        if (url.endsWith("/&#xA")) {
+            url = url.substring(0, url.length()-4);
+        }
+        return url;
+    }
+
     public static String extractCompleteDomainFromUrl(String url) {
         Matcher completeDomainMatcher = Patterns.completeDomain.matcher(url);
         if (!completeDomainMatcher.find()) {
@@ -58,6 +68,14 @@ public class Patterns {
         // remove trailing slash
         if (path.endsWith("/")) {
             path = path.substring(0, path.length()-1);
+        }
+        // return null if path only contains whitespaces
+        if (path.trim().length() == 0) {
+            return null;
+        }
+        // return null if path only contains punctuation (extracted from Markdown)
+        if (path.equals(".") || path.equals(",") || path.equals(":")) {
+            return null;
         }
 
         return path;
