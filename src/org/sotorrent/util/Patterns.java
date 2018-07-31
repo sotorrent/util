@@ -32,12 +32,18 @@ public class Patterns {
     }
 
     public static String cleanUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+
         if (url.endsWith("/.") || url.endsWith("/,") || url.endsWith("/:")) {
             url = url.substring(0, url.length()-1);
         }
+
         if (url.endsWith("/&#xA")) {
             url = url.substring(0, url.length()-4);
         }
+
         return url;
     }
 
