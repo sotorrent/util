@@ -1,7 +1,5 @@
 package org.sotorrent.util;
 
-import org.sotorrent.util.exceptions.RateLimitExceededException;
-
 import javax.net.ssl.HttpsURLConnection;
 import java.io.IOException;
 import java.net.HttpURLConnection;

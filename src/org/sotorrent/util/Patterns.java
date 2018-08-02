@@ -22,6 +22,9 @@ public class Patterns {
     // pattern to extract path (including fragment identifier) from URL
     public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(#[^#/]+)?", Pattern.CASE_INSENSITIVE);
 
+    // (valid or malformed) IPv4
+    public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
+
     public static String extractProtocolFromUrl(String url) {
         // protocol
         Matcher protocolMatcher = Patterns.protocol.matcher(url);
@@ -95,5 +98,10 @@ public class Patterns {
         }
 
         return pathMatcher.group(2);
+    }
+
+    public static boolean isIpAddress(String url) {
+        Matcher ipv4Matcher = Patterns.ipv4.matcher(url);
+        return ipv4Matcher.find();
     }
 }
