@@ -10,6 +10,7 @@ public class HttpUtils {
                                                        String requestMethod,
                                                        boolean followRedirects,
                                                        int timeout) throws IOException {
+        System.setProperty("http.keepAlive", "false"); // see https://stackoverflow.com/a/2733805
         HttpURLConnection conn;
 
         if (url.startsWith("http://")) {
@@ -24,6 +25,7 @@ public class HttpUtils {
         conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:10.0) Gecko/20100101 Firefox/10.0");
         conn.setInstanceFollowRedirects(followRedirects);
         conn.setConnectTimeout(timeout);
+        conn.setRequestProperty("Connection", "close");
         conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
         conn.connect();
 
