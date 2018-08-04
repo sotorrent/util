@@ -9,7 +9,8 @@ public class HttpUtils {
     public static HttpURLConnection openHttpConnection(String url,
                                                        String requestMethod,
                                                        boolean followRedirects,
-                                                       int timeout) throws IOException {
+                                                       int connectTimeout,
+                                                       int readTimeout) throws IOException {
         System.setProperty("http.keepAlive", "false"); // see https://stackoverflow.com/a/2733805
         HttpURLConnection conn;
 
@@ -24,7 +25,8 @@ public class HttpUtils {
         // some API return a "403 Forbidden" if no user agent is specified
         conn.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; Intel Mac OS X 10.13; rv:10.0) Gecko/20100101 Firefox/10.0");
         conn.setInstanceFollowRedirects(followRedirects);
-        conn.setConnectTimeout(timeout);
+        conn.setConnectTimeout(connectTimeout);
+        conn.setReadTimeout(readTimeout);
         conn.setRequestProperty("Connection", "close");
         conn.setRequestMethod(requestMethod);  // see Javadoc of this method for possible values
         conn.connect();
