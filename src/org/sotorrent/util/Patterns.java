@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Patterns {
     // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-    public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:/[\\w.,@^=%&:/~+-]+)?(?:\\([\\w.,%:+-]+\\))?(?:\\?[\\w.,@?^=%&:/~+-]+)?(?:#[\\w.,!@?^=%&:/~+#-]+)?";
+    public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:/[\\w.,@^=%&:/~+-]+)?(?:\\([\\w.,%:+-]+\\))?(?:\\?[\\w.,@?^=%&:/~+-]+)?(?:#[\\w.,@?^=%&:/~+#-]+)?";
     // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern url = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
@@ -20,7 +20,7 @@ public class Patterns {
     public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract path (including fragment identifier) from URL
-    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(?:\\?[^?#]+)?(#[^#]+)?", Pattern.CASE_INSENSITIVE);
+    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(\\?[^?#]+)?(#[^#]+)?", Pattern.CASE_INSENSITIVE);
 
     // (valid or malformed) IPv4
     public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
@@ -90,7 +90,7 @@ public class Patterns {
         return path;
     }
 
-    public static String extractFragmentIdentifierFromUrl(String url) {
+    public static String extractQueryFromUrl(String url) {
         Matcher pathMatcher = Patterns.path.matcher(url);
         if (!pathMatcher.find()) {
             // don't change this, needed to set database column to null (so-posthistory-extractor)
@@ -98,6 +98,16 @@ public class Patterns {
         }
 
         return pathMatcher.group(2);
+    }
+
+    public static String extractFragmentIdentifierFromUrl(String url) {
+        Matcher pathMatcher = Patterns.path.matcher(url);
+        if (!pathMatcher.find()) {
+            // don't change this, needed to set database column to null (so-posthistory-extractor)
+            return null;
+        }
+
+        return pathMatcher.group(3);
     }
 
     public static boolean isIpAddress(String url) {
