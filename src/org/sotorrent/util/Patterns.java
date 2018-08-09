@@ -6,7 +6,7 @@ import java.util.regex.Pattern;
 public class Patterns {
     // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-    public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:/[\\w.,@^=%&:/~+-]+)?(?:\\([\\w.,%:+-]+\\))?(?:\\?[\\w.,@?^=%&:/~+#-]+)?(?:#[\\w.,@?^=%&:/~+#-]+)?";
+    public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))(?:/[\\w.,@^=%&:/~+-]+)?(?:\\([\\w.,%:+-]+\\))?(?:\\?[\\w.,@?^=%&:/~+-]+)?(?:#[\\w.,!@?^=%&:/~+#-]+)?";
     // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern url = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
@@ -20,7 +20,7 @@ public class Patterns {
     public static final Pattern rootDomain = Pattern.compile("([\\w_-]+\\.[\\w_-]+)$", Pattern.CASE_INSENSITIVE);
 
     // pattern to extract path (including fragment identifier) from URL
-    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(#[^#/]+)?", Pattern.CASE_INSENSITIVE);
+    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_-]+(?:(?:\\.[\\w_-]+)+))/([\\w.,@^=%&:/~+-]+)(?:\\?[^?#]+)?(#[^#]+)?", Pattern.CASE_INSENSITIVE);
 
     // (valid or malformed) IPv4
     public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
@@ -39,11 +39,11 @@ public class Patterns {
             return null;
         }
 
-        if (url.endsWith("/.") || url.endsWith("/,") || url.endsWith("/:")) {
+        if (url.endsWith(".") || url.endsWith(",") || url.endsWith(":")) {
             url = url.substring(0, url.length()-1);
         }
 
-        if (url.endsWith("/&#xA")) {
+        if (url.endsWith("&#xA")) {
             url = url.substring(0, url.length()-4);
         }
 

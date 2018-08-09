@@ -5,7 +5,7 @@
     <name>Util</name>
     <groupId>org.sotorrent</groupId>
     <artifactId>util</artifactId>
-    <version>3.0.8</version>
+    <version>3.0.9</version>
     <url>https://github.com/sotorrent/util</url>
 
     <properties>
