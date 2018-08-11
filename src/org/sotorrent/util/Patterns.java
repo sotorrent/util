@@ -39,11 +39,11 @@ public class Patterns {
             return null;
         }
 
-        if (url.endsWith(".") || url.endsWith(",") || url.endsWith(":")) {
+        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";")) {
             url = url.substring(0, url.length()-1);
         }
 
-        if (url.endsWith("&#xA")) {
+        while (url.endsWith("&#xA") || url.endsWith("&#xD")) {
             url = url.substring(0, url.length()-4);
         }
 
