@@ -1,5 +1,7 @@
 package org.sotorrent.util;
 
+import com.google.common.base.CharMatcher;
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -48,6 +50,19 @@ public class Patterns {
         }
 
         return url;
+    }
+
+    /**
+     * Heuristic to test if a match is inside a Markdown inline code.
+     * (uneven number of backtick characters before and after match)
+     * @param matcher the matcher to test
+     * @param content the content in which the match was found
+     * @return true if match is located inside Markdown inline code
+     */
+    public static boolean inInlineCode(Matcher matcher, String content) {
+        int backticksBefore =  CharMatcher.is('`').countIn(content.substring(0, matcher.start()));
+        int backticksAfter =  CharMatcher.is('`').countIn(content.substring(matcher.end()));
+        return backticksBefore > 0 && backticksAfter > 0 && backticksBefore%2 != 0 && backticksAfter%2 != 0;
     }
 
     public static String extractCompleteDomainFromUrl(String url) {
