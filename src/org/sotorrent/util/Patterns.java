@@ -8,24 +8,48 @@ import java.util.regex.Pattern;
 public class Patterns {
     // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
-    public static final String urlRegex = "(?:https?|ftp)://(?:[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+))(?:[\\w.,@^=%&:/~+\\-]+)?(?:\\([\\w.,%:+\\-]+\\))?(?:\\?[\\w.,@?^=%&:/~+\\-]+)?(?:#[\\w.,@?^=%&:/~+#\\-!]+(?:\\([\\w.,%:+\\-]+\\))?)?";
-    // the regex string is needed for the Link classes in project so-posthistory-extractor
-    public static final Pattern url = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
+    private static final String protocolRegex = "https?|ftp";
+    private static final String domainRegex = "[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+)";
+    private static final String rootDomainRegex = "([\\w_\\-]+\\.[\\w_\\-]+)$";
+    private static final String allowedCharacters = "\\w.,@^=%&:/~+\\-";
+    private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
+    private static final String pathRegex = "(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
+    private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
+    private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
+    public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
+    public static final Pattern url, protocol, completeDomain, rootDomain, path;
 
-    // pattern to extract protocol from URL
-    public static final Pattern protocol = Pattern.compile("^(https?|ftp)", Pattern.CASE_INSENSITIVE);
-
-    // pattern to extract domain (including subdomains) from URL
-    public static final Pattern completeDomain = Pattern.compile("^(?:https?|ftp)://([\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+))", Pattern.CASE_INSENSITIVE);
-
-    // pattern to extract root domain from domain string
-    public static final Pattern rootDomain = Pattern.compile("([\\w_\\-]+\\.[\\w_\\-]+)$", Pattern.CASE_INSENSITIVE);
-
-    // pattern to extract path (including fragment identifier) from URL
-    public static final Pattern path = Pattern.compile("^(?:https?|ftp)://(?:[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+))/([\\w.,@^=%&:/~+\\-]+)(\\?[^?#]+)?(#[^#]+)?", Pattern.CASE_INSENSITIVE);
-
-    // (valid or malformed) IPv4
+    // pattern to detect (valid or malformed) IPv4
     public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
+
+    static {
+        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + domainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
+        url = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
+
+        // pattern to extract protocol from URL
+        protocol = Pattern.compile("^" + encloseInCapturingGroup(protocolRegex), Pattern.CASE_INSENSITIVE);
+
+        // pattern to extract domain (including subdomains) from URL
+        completeDomain = Pattern.compile("^" + encloseInNonCapturingGroup(protocolRegex) + "://" + encloseInCapturingGroup(domainRegex), Pattern.CASE_INSENSITIVE);
+
+        // pattern to extract root domain from domain string
+        rootDomain = Pattern.compile(rootDomainRegex, Pattern.CASE_INSENSITIVE);
+
+        // pattern to extract path (including query and fragment identifier) from URL
+        path = Pattern.compile(encloseInNonCapturingGroup(protocolRegex) + "://" + domainRegex + makeOptional(encloseInCapturingGroup(pathRegex)) + makeOptional(encloseInCapturingGroup(queryRegex)) + makeOptional(encloseInCapturingGroup(fragmentIdentifierRegex)), Pattern.CASE_INSENSITIVE);
+    }
+
+    private static String makeOptional(String regex) {
+        return regex + "?";
+    }
+
+    private static String encloseInNonCapturingGroup(String regex) {
+        return "(?:" + regex + ")";
+    }
+
+    private static String encloseInCapturingGroup(String regex) {
+        return "(" + regex + ")";
+    }
 
     public static String extractProtocolFromUrl(String url) {
         // protocol
@@ -89,6 +113,10 @@ public class Patterns {
         }
 
         String path = pathMatcher.group(1);
+        // remove leading slash
+        if (path.startsWith("/")) {
+            path = path.substring(1, path.length());
+        }
         // remove trailing slash
         if (path.endsWith("/")) {
             path = path.substring(0, path.length()-1);
