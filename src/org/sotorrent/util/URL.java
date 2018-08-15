@@ -20,7 +20,7 @@ public class URL  {
     // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
     private static final String protocolRegex = "https?|ftp";
-    private static final String domainRegex = "[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+)";
+    private static final String completeDomainRegex = "[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+)";
     private static final String rootDomainRegex = "([\\w_\\-]+\\.[\\w_\\-]+)$";
     private static final String allowedCharacters = "\\w.,@^=%&:/~+\\-";
     private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
@@ -33,7 +33,7 @@ public class URL  {
     public static final Pattern urlPattern;
 
     static {
-        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + domainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
+        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
         urlPattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
         // pattern to extract root domain from domain string
@@ -65,6 +65,24 @@ public class URL  {
         } catch (MalformedURLException e) {
             e.printStackTrace();
         }
+    }
+
+    private String cleanUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+
+        url = url.trim();
+
+        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";") || url.endsWith("%")) {
+            url = url.substring(0, url.length()-1);
+        }
+
+        while (url.endsWith("&#xA") || url.endsWith("&#xD")) {
+            url = url.substring(0, url.length()-4);
+        }
+
+        return url;
     }
 
     public boolean isEmpty() {
@@ -132,24 +150,6 @@ public class URL  {
             fragmentIdentifier = null;
         }
         return fragmentIdentifier;
-    }
-
-    private String cleanUrl(String url) {
-        if (url == null) {
-            return null;
-        }
-
-        url = url.trim();
-
-        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";")) {
-            url = url.substring(0, url.length()-1);
-        }
-
-        while (url.endsWith("&#xA") || url.endsWith("&#xD")) {
-            url = url.substring(0, url.length()-4);
-        }
-
-        return url;
     }
 
     public String getUrlString() {
