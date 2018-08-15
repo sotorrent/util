@@ -28,11 +28,9 @@ public class URL  {
     private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
     private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
     private static final Pattern rootDomainPattern;
+    private static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+"); // pattern to detect (valid or malformed) IPv4
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern urlPattern;
-
-    // pattern to detect (valid or malformed) IPv4
-    public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
 
     static {
         urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + domainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
@@ -182,6 +180,11 @@ public class URL  {
         return fragmentIdentifier;
     }
 
+    public boolean isIpAddress() {
+        Matcher ipv4Matcher = URL.ipv4.matcher(urlString);
+        return ipv4Matcher.find();
+    }
+
     /**
      * Heuristic to test if a match is inside a Markdown inline code.
      * (uneven number of backtick characters before and after match)
@@ -193,10 +196,5 @@ public class URL  {
         int backticksBefore =  CharMatcher.is('`').countIn(content.substring(0, matcher.start()));
         int backticksAfter =  CharMatcher.is('`').countIn(content.substring(matcher.end()));
         return backticksBefore > 0 && backticksAfter > 0 && backticksBefore%2 != 0 && backticksAfter%2 != 0;
-    }
-
-    public static boolean isIpAddress(String url) {
-        Matcher ipv4Matcher = URL.ipv4.matcher(url);
-        return ipv4Matcher.find();
     }
 }
