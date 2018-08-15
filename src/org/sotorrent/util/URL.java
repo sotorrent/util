@@ -1,0 +1,202 @@
+package org.sotorrent.util;
+
+import com.google.common.base.CharMatcher;
+
+import java.net.MalformedURLException;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+public class URL  {
+    private java.net.URL urlObject;
+
+    private String urlString;
+    private String protocol;
+    private String completeDomain;
+    private String rootDomain;
+    private String path;
+    private String query;
+    private String fragmentIdentifier;
+
+    // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
+    // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
+    private static final String protocolRegex = "https?|ftp";
+    private static final String domainRegex = "[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+)";
+    private static final String rootDomainRegex = "([\\w_\\-]+\\.[\\w_\\-]+)$";
+    private static final String allowedCharacters = "\\w.,@^=%&:/~+\\-";
+    private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
+    private static final String pathRegex = "(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
+    private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
+    private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
+    private static final Pattern rootDomainPattern;
+    public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
+    public static final Pattern urlPattern;
+
+    // pattern to detect (valid or malformed) IPv4
+    public static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+");
+
+    static {
+        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + domainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
+        urlPattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
+
+        // pattern to extract root domain from domain string
+        rootDomainPattern = Pattern.compile(rootDomainRegex, Pattern.CASE_INSENSITIVE);
+    }
+
+    private static String makeOptional(String regex) {
+        return regex + "?";
+    }
+
+    private static String encloseInNonCapturingGroup(String regex) {
+        return "(?:" + regex + ")";
+    }
+
+    private static String encloseInCapturingGroup(String regex) {
+        return "(" + regex + ")";
+    }
+
+    public URL(String url) {
+        this.urlString = cleanUrl(url);
+
+        if (isEmpty()) {
+            return;
+        }
+
+        try {
+            this.urlObject = new java.net.URL(this.urlString);
+            extractURLComponents();
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public boolean isEmpty() {
+        return this.urlString == null || this.urlString.length() == 0;
+    }
+
+    private void extractURLComponents() {
+        if (this.urlObject == null) {
+            return;
+        }
+
+        this.protocol = this.urlObject.getProtocol();
+        this.completeDomain = this.urlObject.getHost();
+        this.rootDomain = getRootDomain(this.urlObject);
+        this.path = getPath(this.urlObject);
+        this.query = getQuery(this.urlObject);
+        this.fragmentIdentifier = getFragmentIdentifier(this.urlObject);
+    }
+
+    private String getRootDomain(java.net.URL url) {
+        Matcher rootDomainMatcher = URL.rootDomainPattern.matcher(url.getHost());
+        if (!rootDomainMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of root domain failed for URL: " + url);
+        }
+        return rootDomainMatcher.group(1);
+    }
+
+    private String getPath(java.net.URL url) {
+        String path = url.getPath();
+
+        // remove leading slash
+        if (path.startsWith("/")) {
+            path = path.substring(1, path.length());
+        }
+
+        // remove trailing slash
+        if (path.endsWith("/")) {
+            path = path.substring(0, path.length()-1);
+        }
+
+        // return null if path only contains whitespaces
+        if (path.trim().length() == 0) {
+            return null;
+        }
+
+        // return null if path only contains punctuation (extracted from Markdown)
+        if (path.equals(".") || path.equals(",") || path.equals(":")) {
+            return null;
+        }
+
+        return path;
+    }
+
+    private String getQuery(java.net.URL url) {
+        String query = url.getQuery();
+        if (query != null && query.trim().length() == 0) {
+            query = null;
+        }
+        return query;
+    }
+
+    private String getFragmentIdentifier(java.net.URL url) {
+        String fragmentIdentifier = url.getRef();
+        if (fragmentIdentifier != null && fragmentIdentifier.trim().length() == 0) {
+            fragmentIdentifier = null;
+        }
+        return fragmentIdentifier;
+    }
+
+    private String cleanUrl(String url) {
+        if (url == null) {
+            return null;
+        }
+
+        url = url.trim();
+
+        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";")) {
+            url = url.substring(0, url.length()-1);
+        }
+
+        while (url.endsWith("&#xA") || url.endsWith("&#xD")) {
+            url = url.substring(0, url.length()-4);
+        }
+
+        return url;
+    }
+
+    public String getUrlString() {
+        return urlString;
+    }
+
+    public String getProtocol() {
+        return protocol;
+    }
+
+    public String getCompleteDomain() {
+        return completeDomain;
+    }
+
+    public String getRootDomain() {
+        return rootDomain;
+    }
+
+    public String getPath() {
+        return path;
+    }
+
+    public String getQuery() {
+        return query;
+    }
+
+    public String getFragmentIdentifier() {
+        return fragmentIdentifier;
+    }
+
+    /**
+     * Heuristic to test if a match is inside a Markdown inline code.
+     * (uneven number of backtick characters before and after match)
+     * @param matcher the matcher to test
+     * @param content the content in which the match was found
+     * @return true if match is located inside Markdown inline code
+     */
+    public static boolean inInlineCode(Matcher matcher, String content) {
+        int backticksBefore =  CharMatcher.is('`').countIn(content.substring(0, matcher.start()));
+        int backticksAfter =  CharMatcher.is('`').countIn(content.substring(matcher.end()));
+        return backticksBefore > 0 && backticksAfter > 0 && backticksBefore%2 != 0 && backticksAfter%2 != 0;
+    }
+
+    public static boolean isIpAddress(String url) {
+        Matcher ipv4Matcher = URL.ipv4.matcher(url);
+        return ipv4Matcher.find();
+    }
+}
