@@ -20,13 +20,14 @@ public class URL  {
     // for the basic regex, see https://stackoverflow.com/a/6041965, alternative: https://stackoverflow.com/a/29288898
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
     private static final String protocolRegex = "https?|ftp";
-    private static final String completeDomainRegex = "[\\w_\\-]+(?:(?:\\.[\\w_\\-]+)+)";
-    private static final String rootDomainRegex = "([\\w_\\-]+\\.[\\w_\\-]+)$";
-    private static final String allowedCharacters = "\\w.,@^=%&:/~+\\-";
+    private static final String completeDomainRegex = "[\\w\\-]+(?:(?:\\.[\\w\\-]+)+)";
+    private static final String rootDomainRegex = "([\\w\\-]+\\.[\\w\\-]+)(?:[^\\w\\-.].*)?$";
+    private static final String allowedCharacters = "\\w\\-.,@^=%&:/~+";
     private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
     private static final String pathRegex = "(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
     private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
     private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
+    private static final Pattern completeDomainPattern;
     private static final Pattern rootDomainPattern;
     private static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+"); // pattern to detect (valid or malformed) IPv4
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
@@ -36,7 +37,10 @@ public class URL  {
         urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
         urlPattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
-        // pattern to extract root domain from domain string
+        // pattern to extract the complate domain from a domain string
+        completeDomainPattern = Pattern.compile(encloseInCapturingGroup(completeDomainRegex) + "(?:[^\\w\\-.].*)?$");
+
+        // pattern to extract the root domain from a domain string
         rootDomainPattern = Pattern.compile(rootDomainRegex, Pattern.CASE_INSENSITIVE);
     }
 
@@ -52,19 +56,18 @@ public class URL  {
         return "(" + regex + ")";
     }
 
-    public URL(String url) {
+    public URL(String url) throws MalformedURLException {
         this.urlString = cleanUrl(url);
 
         if (isEmpty()) {
             return;
         }
-
-        try {
-            this.urlObject = new java.net.URL(this.urlString);
-            extractURLComponents();
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
+        if (!isValid()) {
+            throw new MalformedURLException("Malformed URL: " + urlString);
         }
+
+        this.urlObject = new java.net.URL(this.urlString);
+        extractURLComponents();
     }
 
     private String cleanUrl(String url) {
@@ -85,6 +88,11 @@ public class URL  {
         return url;
     }
 
+    private boolean isValid() {
+        Matcher urlMatcher = URL.urlPattern.matcher(this.urlString);
+        return urlMatcher.matches();
+    }
+
     public boolean isEmpty() {
         return this.urlString == null || this.urlString.length() == 0;
     }
@@ -95,11 +103,19 @@ public class URL  {
         }
 
         this.protocol = this.urlObject.getProtocol();
-        this.completeDomain = this.urlObject.getHost();
+        this.completeDomain = getCompleteDomain(this.urlObject);
         this.rootDomain = getRootDomain(this.urlObject);
         this.path = getPath(this.urlObject);
         this.query = getQuery(this.urlObject);
         this.fragmentIdentifier = getFragmentIdentifier(this.urlObject);
+    }
+
+    private String getCompleteDomain(java.net.URL url) {
+        Matcher completeDomainMatcher = URL.completeDomainPattern.matcher(url.getHost());
+        if (!completeDomainMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of complete domain failed for URL: " + url);
+        }
+        return completeDomainMatcher.group(1);
     }
 
     private String getRootDomain(java.net.URL url) {
