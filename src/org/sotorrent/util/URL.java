@@ -2,7 +2,10 @@ package org.sotorrent.util;
 
 import com.google.common.base.CharMatcher;
 
+import java.io.*;
 import java.net.MalformedURLException;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +16,7 @@ public class URL  {
     private String protocol;
     private String completeDomain;
     private String rootDomain;
+    private String topLevelDomain;
     private String path;
     private String query;
     private String fragmentIdentifier;
@@ -21,10 +25,10 @@ public class URL  {
     // see also https://en.wikipedia.org/wiki/Uniform_Resource_Identifier
     private static final String protocolRegex = "https?|ftp";
     private static final String completeDomainRegex = "[\\w\\-]+(?:(?:\\.[\\w\\-]+)+)";
-    private static final String rootDomainRegex = "([\\w\\-]+\\.[\\w\\-]+)(?:[^\\w\\-.].*)?$";
+    private static final String rootDomainRegex = "([\\w\\-]+\\.([\\w\\-]+))(?:[^\\w\\-.].*)?$";
     private static final String allowedCharacters = "\\w\\-.,@^=%&:/~+";
     private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
-    private static final String pathRegex = "(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
+    private static final String pathRegex = "/(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
     private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
     private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
     private static final Pattern completeDomainPattern;
@@ -32,6 +36,10 @@ public class URL  {
     private static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+"); // pattern to detect (valid or malformed) IPv4
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern urlPattern;
+
+    // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
+    private static final String topLevelDomainList = "tld-list.txt";
+    public static Set<String> validTopLevelDomains = new HashSet<>();
 
     static {
         urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
@@ -42,6 +50,21 @@ public class URL  {
 
         // pattern to extract the root domain from a domain string
         rootDomainPattern = Pattern.compile(rootDomainRegex, Pattern.CASE_INSENSITIVE);
+
+        // read list with valid URIs
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(
+                Thread.currentThread().getContextClassLoader().getResourceAsStream(topLevelDomainList)))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                // ignore comments
+                if (line.trim().startsWith("#")) {
+                    continue;
+                }
+                validTopLevelDomains.add(line.toLowerCase());
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     private static String makeOptional(String regex) {
@@ -97,7 +120,7 @@ public class URL  {
         return this.urlString == null || this.urlString.length() == 0;
     }
 
-    private void extractURLComponents() {
+    private void extractURLComponents() throws MalformedURLException {
         if (this.urlObject == null) {
             return;
         }
@@ -105,9 +128,19 @@ public class URL  {
         this.protocol = this.urlObject.getProtocol();
         this.completeDomain = getCompleteDomain(this.urlObject);
         this.rootDomain = getRootDomain(this.urlObject);
+        this.topLevelDomain = getTopLevelDomain(urlObject);
+
+        if (!isValidTopLevelDomain(topLevelDomain)) {
+            throw new MalformedURLException("Invalid Top Level Domain: " + topLevelDomain);
+        }
+
         this.path = getPath(this.urlObject);
         this.query = getQuery(this.urlObject);
         this.fragmentIdentifier = getFragmentIdentifier(this.urlObject);
+    }
+
+    private boolean isValidTopLevelDomain(String topLevelDomain) {
+        return validTopLevelDomains.contains(topLevelDomain.toLowerCase());
     }
 
     private String getCompleteDomain(java.net.URL url) {
@@ -124,6 +157,14 @@ public class URL  {
             throw new IllegalArgumentException("Extraction of root domain failed for URL: " + url);
         }
         return rootDomainMatcher.group(1);
+    }
+
+    private String getTopLevelDomain(java.net.URL url) {
+        Matcher rootDomainMatcher = URL.rootDomainPattern.matcher(url.getHost());
+        if (!rootDomainMatcher.find()) {
+            throw new IllegalArgumentException("Extraction of top-level domain failed for URL: " + url);
+        }
+        return rootDomainMatcher.group(2);
     }
 
     private String getPath(java.net.URL url) {
