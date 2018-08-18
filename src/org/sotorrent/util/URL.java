@@ -33,7 +33,6 @@ public class URL  {
     private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
     private static final Pattern completeDomainPattern;
     private static final Pattern rootDomainPattern;
-    private static final Pattern ipv4 = Pattern.compile("https?://[.\\d]+"); // pattern to detect (valid or malformed) IPv4
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern urlPattern;
 
@@ -235,11 +234,6 @@ public class URL  {
 
     public String getFragmentIdentifier() {
         return fragmentIdentifier;
-    }
-
-    public boolean isIpAddress() {
-        Matcher ipv4Matcher = URL.ipv4.matcher(urlString);
-        return ipv4Matcher.find();
     }
 
     /**
