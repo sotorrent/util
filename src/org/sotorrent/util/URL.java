@@ -99,7 +99,7 @@ public class URL  {
 
         url = url.trim();
 
-        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";") || url.endsWith("%")) {
+        while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";") || url.endsWith("%") || url.endsWith("#")) {
             url = url.substring(0, url.length()-1);
         }
 
