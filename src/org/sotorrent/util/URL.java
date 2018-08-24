@@ -99,14 +99,27 @@ public class URL  {
 
         url = url.trim();
 
+        int length = 0;
+        while (length != url.length()) {
+            length = url.length();
+            url = cleanPunctuation(url);
+            url = cleanEscapedCharacters(url);
+        }
+
+        return url;
+    }
+
+    private String cleanPunctuation(String url) {
         while (url.endsWith(".") || url.endsWith(",") || url.endsWith(":") || url.endsWith(";") || url.endsWith("%") || url.endsWith("#")) {
             url = url.substring(0, url.length()-1);
         }
+        return url;
+    }
 
+    private String cleanEscapedCharacters(String url) {
         while (url.endsWith("&#xA") || url.endsWith("&#xD")) {
             url = url.substring(0, url.length()-4);
         }
-
         return url;
     }
 
