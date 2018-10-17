@@ -5,7 +5,7 @@
     <name>Util</name>
     <groupId>org.sotorrent</groupId>
     <artifactId>util</artifactId>
-    <version>3.2.8</version>
+    <version>3.2.9</version>
     <url>https://github.com/sotorrent/util</url>
 
     <properties>
@@ -13,31 +13,25 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <project.build.sourceDirectory>src</project.build.sourceDirectory>
-        <project.build.testSourceDirectory>src/org/sotorrent/util/tests</project.build.testSourceDirectory>
+        <project.build.testSourceDirectory>tests</project.build.testSourceDirectory>
         <project.build.resourceDirectory>data</project.build.resourceDirectory>
         <!-- Maven -->
         <maven.compiler.target>1.8</maven.compiler.target>
         <maven.compiler.source>1.8</maven.compiler.source>
-        <maven.compiler.plugin.version>3.7.0</maven.compiler.plugin.version>
-        <maven.jar.plugin.version>3.0.2</maven.jar.plugin.version>
+        <maven.compiler.plugin.version>3.8.0</maven.compiler.plugin.version>
+        <maven.jar.plugin.version>3.1.0</maven.jar.plugin.version>
         <maven.assembly.plugin.version>3.1.0</maven.assembly.plugin.version>
         <maven.source.plugin.version>3.0.1</maven.source.plugin.version>
-        <maven.javadoc.plugin.version>3.0.0</maven.javadoc.plugin.version>
+        <maven.javadoc.plugin.version>3.0.1</maven.javadoc.plugin.version>
         <maven.deploy.plugin.version>2.8.2</maven.deploy.plugin.version>
-        <maven.surefire.plugin.version>2.19.1</maven.surefire.plugin.version>
-        <!--
-            "Due to a memory leak in Surefire 2.20 and issues running on Java 9, the junit-platform-surefire-provider
-            currently only works with Surefire 2.19.1."
-            (see https://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven)
-        -->
+        <maven.surefire.plugin.version>2.22.1</maven.surefire.plugin.version>
         <!-- JUnit -->
-        <junit.platform.version>1.1.1</junit.platform.version>
-        <junit.jupiter.version>5.1.1</junit.jupiter.version>
-        <hamcrest.junit.version>2.0.0.0</hamcrest.junit.version>
+        <junit.jupiter.version>LATEST</junit.jupiter.version>
+        <hamcrest.junit.version>LATEST</hamcrest.junit.version>
         <!-- Other dependencies -->
-        <commons-io.version>2.6</commons-io.version>
-        <guava.version>25.0-jre</guava.version>
-        <hibernate.version>5.2.16.Final</hibernate.version>
+        <commons-io.version>LATEST</commons-io.version>
+        <guava.version>LATEST</guava.version>
+        <hibernate.version>LATEST</hibernate.version>
     </properties>
 
     <distributionManagement>
@@ -81,14 +75,9 @@
     </dependencies>
 
     <build>
-        <!-- configure source, test, and resource directories-->
+        <!-- configure source and test directories-->
         <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
         <testSourceDirectory>${project.build.testSourceDirectory}</testSourceDirectory>
-        <resources>
-            <resource>
-                <directory>${project.build.resourceDirectory}</directory>
-            </resource>
-        </resources>
 
         <plugins>
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
@@ -105,6 +94,11 @@
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.jar.plugin.version}</version>
                 <configuration>
+                    <archive>
+                        <manifest>
+                            <!--mainClass></mainClass-->
+                        </manifest>
+                    </archive>
                 </configuration>
             </plugin>
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-assembly-plugin -->
@@ -112,6 +106,11 @@
                 <artifactId>maven-assembly-plugin</artifactId>
                 <version>${maven.assembly.plugin.version}</version>
                 <configuration>
+                    <archive>
+                        <manifest>
+                            <!--mainClass></mainClass-->
+                        </manifest>
+                    </archive>
                     <descriptorRefs>
                         <descriptorRef>jar-with-dependencies</descriptorRef>
                     </descriptorRefs>
@@ -159,21 +158,6 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${maven.surefire.plugin.version}</version>
-                <!-- http://junit.org/junit5/docs/current/user-guide/#running-tests-build-maven -->
-                <dependencies>
-                    <!-- https://mvnrepository.com/artifact/org.junit.platform/junit-platform-surefire-provider -->
-                    <dependency>
-                        <groupId>org.junit.platform</groupId>
-                        <artifactId>junit-platform-surefire-provider</artifactId>
-                        <version>${junit.platform.version}</version>
-                    </dependency>
-                    <!-- https://mvnrepository.com/artifact/org.junit.jupiter/junit-jupiter-engine -->
-                    <dependency>
-                        <groupId>org.junit.jupiter</groupId>
-                        <artifactId>junit-jupiter-engine</artifactId>
-                        <version>${junit.jupiter.version}</version>
-                    </dependency>
-                </dependencies>
             </plugin>
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-deploy-plugin -->
             <plugin>
