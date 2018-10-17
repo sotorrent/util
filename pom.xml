@@ -65,12 +65,20 @@
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
             <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter-engine</artifactId>
+            <version>${junit.jupiter.version}</version>
+            <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.hamcrest/hamcrest-junit -->
         <dependency>
             <groupId>org.hamcrest</groupId>
             <artifactId>hamcrest-junit</artifactId>
             <version>${hamcrest.junit.version}</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
 
@@ -78,6 +86,11 @@
         <!-- configure source and test directories-->
         <sourceDirectory>${project.build.sourceDirectory}</sourceDirectory>
         <testSourceDirectory>${project.build.testSourceDirectory}</testSourceDirectory>
+        <resources>
+            <resource>
+                <directory>${project.build.resourceDirectory}</directory>
+            </resource>
+        </resources>
 
         <plugins>
             <!-- https://mvnrepository.com/artifact/org.apache.maven.plugins/maven-compiler-plugin -->
