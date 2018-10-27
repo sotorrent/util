@@ -13,7 +13,6 @@ class URLTest {
             "http://stackoverflow.com/a/53022912",
             "https://www.stackoverflow.com/a/53022912",
             "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912#53022912",
-            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912",
             "http://stackoverflow.com/a/3758880/1035417"
     };
 
@@ -30,7 +29,8 @@ class URLTest {
             "https://stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
             "http://stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
             "https://www.stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
-            "HTTPS://WWW.STACKOVERFLOW.COM/QUESTIONS/52761212/how-can-you-merge-objects-in-array-of-objects#COMMENT92462603_52761348"
+            "HTTPS://WWW.STACKOVERFLOW.COM/QUESTIONS/52761212/how-can-you-merge-objects-in-array-of-objects#COMMENT92462603_52761348",
+            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912" // this points to the question, not the answer
     };
 
     private String[] stackOverflowNonPostLinkVariants = {
@@ -43,15 +43,7 @@ class URLTest {
             // see https://github.com/sotorrent/db-scripts/issues/2
             // see https://raw.githubusercontent.com/GEKONavsat/FreeIMU/master/libraries/FreeIMU/debug/decode_float.py
             "http://stackoverflow.com/questions/4315190/single-precision-big-endian-f...",
-            "# http://stackoverflow.com/questions/4315190/single-precision-big-endian-f..."
-    };
-
-    private String[] stackOverflowBrokenAnswerLinks = {
-            // see https://github.com/sotorrent/db-scripts/issues/2
-            // see https://raw.githubusercontent.com/GEKONavsat/FreeIMU/master/libraries/FreeIMU/debug/decode_float.py
-            // The following two links point to the wrong answer (post id 1), because of the abbreviation.
-            // Since there exist one-digit post ids (e.g., stackoverflow.com/a/6), we can't fix this without
-            // compromising on the matching in other scenarios.
+            "# http://stackoverflow.com/questions/4315190/single-precision-big-endian-f...",
             "http://stackoverflow.com/questions/1592158/python-convert-hex-to-float/1...",
             "# http://stackoverflow.com/questions/1592158/python-convert-hex-to-float/1..."
     };
@@ -68,10 +60,6 @@ class URLTest {
             testNormalization(link, 'a');
         }
 
-        for (String link : stackOverflowBrokenAnswerLinks) {
-            testNormalization(link, 'a');
-        }
-
         for (String link : stackOverflowQuestionLinkVariants) {
             testNormalization(link, 'q');
         }
@@ -80,12 +68,9 @@ class URLTest {
             testNormalization(link, 'q');
         }
 
+        // comment links are normalized to question links
         for (String link : stackOverflowCommentLinkVariants) {
-            URL url = URL.stackOverflowLinkFromSourceCodeLine(link);
-            assertNotNull(url);
-            URL normalizedUrl = URL.getNormalizedStackOverflowLink(url);
-            assertNotNull(normalizedUrl);
-            assertTrue(normalizedUrl.getUrlString().toLowerCase().contains("#comment"));
+            testNormalization(link, 'q');
         }
 
         for (String link : stackOverflowNonPostLinkVariants) {

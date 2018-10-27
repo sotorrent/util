@@ -46,14 +46,14 @@ public class URL  {
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern urlPattern;
 
-    // regular expressions to match and normalize Stack Overflow links
-    private static final Pattern stackOverflowLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/[^\\s).\"]*))");
-    private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/search[^:]+))");
-    private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/a\\/([\\d]+))");
-    private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+(?:\\/|#)([\\d]+))");
-    private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com/q/([\\d]+))");
-    private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/([\\d]+))");
-    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+\\#comment[\\d]+_[\\d]+))");
+    // regular expressions to match and normalize Stack Overflow links (use redundant escaping to be compatible with SQL)
+    private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/[^\\s).\"]*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/search[^:]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/a\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s#]+#([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com/q/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+#comment[\\d]+_[\\d]+)", Pattern.CASE_INSENSITIVE);
 
     // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     private static final String topLevelDomainList = "tld-list.txt";
@@ -310,11 +310,6 @@ public class URL  {
 
     public static URL getNormalizedStackOverflowLink(URL url) {
         try {
-            Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url.getUrlString());
-            if (commentMatcher.find()) {
-                return new URL(commentMatcher.group(1));
-            }
-
             Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url.getUrlString());
             if (shortAnswerMatcher.find()) {
                 return new URL("https://stackoverflow.com/a/" + shortAnswerMatcher.group(1));
