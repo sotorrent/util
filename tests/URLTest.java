@@ -13,7 +13,8 @@ class URLTest {
             "http://stackoverflow.com/a/53022912",
             "https://www.stackoverflow.com/a/53022912",
             "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912#53022912",
-            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912"
+            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912",
+            "http://stackoverflow.com/a/3758880/1035417"
     };
 
     private String[] stackOverflowQuestionLinkVariants = {
