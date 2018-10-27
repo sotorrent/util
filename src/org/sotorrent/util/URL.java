@@ -6,12 +6,22 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.logging.Logger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 public class URL  {
-    private java.net.URL urlObject;
+    private static Logger logger = null;
+    static {
+        // configure logger
+        try {
+            logger = LogUtils.getClassLogger(URL.class);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
 
+    private java.net.URL urlObject;
     private String urlString;
     private String protocol;
     private String completeDomain;
@@ -35,6 +45,15 @@ public class URL  {
     private static final Pattern rootDomainPattern;
     public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     public static final Pattern urlPattern;
+
+    // regular expressions to match and normalize Stack Overflow links
+    private static final Pattern stackOverflowLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/[^\\s).\"]*))");
+    private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/search[^:]+))");
+    private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/a\\/([\\d]+))");
+    private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+(?:\\/|#)([\\d]+))");
+    private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com/q/([\\d]+))");
+    private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("(?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/([\\d]+))");
+    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("((?i:https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+\\#comment[\\d]+_[\\d]+))");
 
     // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     private static final String topLevelDomainList = "tld-list.txt";
@@ -260,5 +279,66 @@ public class URL  {
         int backticksBefore =  CharMatcher.is('`').countIn(content.substring(0, matcher.start()));
         int backticksAfter =  CharMatcher.is('`').countIn(content.substring(matcher.end()));
         return backticksBefore > 0 && backticksAfter > 0 && backticksBefore%2 != 0 && backticksAfter%2 != 0;
+    }
+
+    public static URL stackOverflowLinkFromSourceCodeLine(String line) {
+        Matcher stackOverflowMatcher = stackOverflowLinkPattern.matcher(line);
+        String url = "";
+        if (stackOverflowMatcher.find()) {
+            try {
+                url = stackOverflowMatcher.group(1);
+                return new URL(url);
+            } catch (MalformedURLException eOutter) {
+                // Java's URL class doesn't accept SO search URLs like https://stackoverflow.com/search?q=user:9841338+[python]
+                // This workaround ignores everything after the problematic colon character
+                Matcher stackOverflowSearchMatcher = stackOverflowSearchLinkPattern.matcher(url);
+                if (stackOverflowSearchMatcher.find()) {
+                    try {
+                        return new URL(stackOverflowSearchMatcher.group(1));
+                    } catch (MalformedURLException eInner) {
+                        logger.warning(eInner.toString());
+                    }
+                } else {
+                    logger.warning(eOutter.toString());
+                }
+                return null;
+            }
+        }
+        logger.info("No Stack Overflow link found in: " + line);
+        return null;
+    }
+
+    public static URL getNormalizedStackOverflowLink(URL url) {
+        try {
+            Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url.getUrlString());
+            if (commentMatcher.find()) {
+                return new URL(commentMatcher.group(1));
+            }
+
+            Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url.getUrlString());
+            if (shortAnswerMatcher.find()) {
+                return new URL("https://stackoverflow.com/a/" + shortAnswerMatcher.group(1));
+            }
+
+            Matcher longAnswerMatcher = stackOverflowLongAnswerLinkPattern.matcher(url.getUrlString());
+            if (longAnswerMatcher.find()) {
+                return new URL("https://stackoverflow.com/a/" + longAnswerMatcher.group(1));
+            }
+
+            Matcher shortQuestionMatcher = stackOverflowShortQuestionLinkPattern.matcher(url.getUrlString());
+            if (shortQuestionMatcher.find()) {
+                return new URL("https://stackoverflow.com/q/" + shortQuestionMatcher.group(1));
+            }
+
+            Matcher longQuestionMatcher = stackOverflowLongQuestionLinkPattern.matcher(url.getUrlString());
+            if (longQuestionMatcher.find()) {
+                return new URL("https://stackoverflow.com/q/" + longQuestionMatcher.group(1));
+            }
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
+
+        logger.info("Normalization of link failed: " + url.getUrlString());
+        return null;
     }
 }
