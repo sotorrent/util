@@ -310,6 +310,11 @@ public class URL  {
 
     public static URL getNormalizedStackOverflowLink(URL url) {
         try {
+            Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url.getUrlString());
+            if (commentMatcher.find()) {
+                return new URL(commentMatcher.group(1));
+            }
+
             Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url.getUrlString());
             if (shortAnswerMatcher.find()) {
                 return new URL("https://stackoverflow.com/a/" + shortAnswerMatcher.group(1));

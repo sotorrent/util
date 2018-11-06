@@ -68,9 +68,8 @@ class URLTest {
             testNormalization(link, 'q');
         }
 
-        // comment links are normalized to question links
         for (String link : stackOverflowCommentLinkVariants) {
-            testNormalization(link, 'q');
+            testNormalization(link, 'c', true);
         }
 
         for (String link : stackOverflowNonPostLinkVariants) {
@@ -82,13 +81,23 @@ class URLTest {
     }
 
     private void testNormalization(String link, char type) {
+        testNormalization(link, type, false);
+    }
+
+    private void testNormalization(String link, char type, boolean isComment) {
         if (type != 'a' && type != 'q') {
             return;
         }
         URL url = URL.stackOverflowLinkFromSourceCodeLine(link);
         assertNotNull(url);
+
         URL normalizedUrl = URL.getNormalizedStackOverflowLink(url);
         assertNotNull(normalizedUrl);
         assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/" + type +"/"));
+
+        if (isComment) {
+            assertTrue(normalizedUrl.getUrlString().contains("#comment"));
+
+        }
     }
 }
