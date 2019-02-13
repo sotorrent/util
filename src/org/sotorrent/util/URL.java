@@ -53,7 +53,7 @@ public class URL  {
     private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s#]+#([\\d]+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com/q/([\\d]+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s\\/#]+#comment[\\d]+_[\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/(questions\\/\\d+)\\/[^\\s\\/#]+(?:\\/\\d+)?(?:\\?[^\\s\\/#]+)?(#comment\\d+_\\d+)", Pattern.CASE_INSENSITIVE);
 
     // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     private static final String topLevelDomainList = "tld-list.txt";
@@ -312,7 +312,8 @@ public class URL  {
         try {
             Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url.getUrlString());
             if (commentMatcher.find()) {
-                return new URL(commentMatcher.group(1));
+                return new URL("https://stackoverflow.com/" + commentMatcher.group(1)
+                        + commentMatcher.group(2).toLowerCase());
             }
 
             Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url.getUrlString());

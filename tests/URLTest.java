@@ -1,6 +1,8 @@
 import org.junit.jupiter.api.Test;
 import org.sotorrent.util.URL;
 
+import java.util.regex.Pattern;
+
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -23,14 +25,16 @@ class URLTest {
             "HTTPS://STACKOVERFLOW.COM/Q/53022815",
             "http://stackoverflow.com/q/53022815",
             "http://www.stackoverflow.com/q/53022815",
+            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912" // this points to the question, not the answer
     };
 
+    Pattern stackOverflowNormalizedCommentLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/\\d+#comment\\d+_\\d+)", Pattern.CASE_INSENSITIVE);
     private String[] stackOverflowCommentLinkVariants = {
             "https://stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
             "http://stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
             "https://www.stackoverflow.com/questions/52761212/how-can-you-merge-objects-in-array-of-objects#comment92462603_52761348",
             "HTTPS://WWW.STACKOVERFLOW.COM/QUESTIONS/52761212/how-can-you-merge-objects-in-array-of-objects#COMMENT92462603_52761348",
-            "https://stackoverflow.com/questions/53022815/running-python-function-in-ansible/53022912" // this points to the question, not the answer
+            "https://stackoverflow.com/questions/28705447/is-there-a-java-method-that-fills-a-list-by-calling-a-function-many-times/28705651?noredirect=1#comment45733057_28705651"
     };
 
     private String[] stackOverflowNonPostLinkVariants = {
@@ -85,7 +89,7 @@ class URLTest {
     }
 
     private void testNormalization(String link, char type, boolean isComment) {
-        if (type != 'a' && type != 'q') {
+        if (type != 'a' && type != 'q' && type != 'c') {
             return;
         }
         URL url = URL.stackOverflowLinkFromSourceCodeLine(link);
@@ -93,11 +97,13 @@ class URLTest {
 
         URL normalizedUrl = URL.getNormalizedStackOverflowLink(url);
         assertNotNull(normalizedUrl);
-        assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/" + type +"/"));
 
         if (isComment) {
+            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/"));
             assertTrue(normalizedUrl.getUrlString().contains("#comment"));
-
+            assertTrue(stackOverflowNormalizedCommentLinkPattern.matcher(normalizedUrl.getUrlString()).matches());
+        } else {
+            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/" + type +"/"));
         }
     }
 }
