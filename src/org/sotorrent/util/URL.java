@@ -47,7 +47,7 @@ public class URL  {
     public static final Pattern urlPattern;
 
     // regular expressions to match and normalize Stack Overflow links (use redundant escaping to be compatible with SQL)
-    private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/[^\\s).\"]*)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/(?:[a-zA-Z0-9\\-_#/\\\\?=+&%;]*[a-zA-Z0-9/])?)", Pattern.CASE_INSENSITIVE);
     private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/search[^:]+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/a\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
     private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s#]+#([\\d]+)", Pattern.CASE_INSENSITIVE);

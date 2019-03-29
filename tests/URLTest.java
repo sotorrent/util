@@ -3,9 +3,7 @@ import org.sotorrent.util.URL;
 
 import java.util.regex.Pattern;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.sotorrent.util.URL.validTopLevelDomains;
 
 class URLTest {
@@ -52,6 +50,17 @@ class URLTest {
             "# http://stackoverflow.com/questions/1592158/python-convert-hex-to-float/1..."
     };
 
+    private String[] stackOverflowLinkEndings = {
+            "http://stackoverflow.com/q/1480971/3191,",
+            "http://stackoverflow.com/questions/7050137/\\",
+            "http://stackoverflow.com/questions/13350577/can-powershell-get-childproperty-get-a-list-of-real-registry-keys-like-reg-query</maml:uri>",
+            "http://stackoverflow.com/questions/20522870/about-the-dynamic-de-optimization-of-hotspot&lt;",
+            "http://stackoverflow.com/users/4759300/develost'",
+            "http://stackoverflow.com/questions/21557461/execute-a-batch-file-from-nodejs|stackoverflow}",
+            "http://stackoverflow.com/questions/3721249/python-date-interval-intersection'''",
+            "http://stackoverflow.com/questions/35151624/underscores-font-size-mixin>\\n\\t$rem-size:"
+    };
+
     @Test
     void testLoadingTldList(){
         assertNotNull(validTopLevelDomains);
@@ -82,6 +91,12 @@ class URLTest {
             URL normalizedUrl = URL.getNormalizedStackOverflowLink(url);
             assertNull(normalizedUrl);
         }
+
+        for (String link : stackOverflowLinkEndings) {
+            URL url = URL.stackOverflowLinkFromSourceCodeLine(link);
+            assertNotNull(url);
+            assertTrue(url.getUrlString().matches(".+[\\w/]$"), url.getUrlString());
+        }
     }
 
     private void testNormalization(String link, char type) {
@@ -99,11 +114,11 @@ class URLTest {
         assertNotNull(normalizedUrl);
 
         if (isComment) {
-            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/"));
-            assertTrue(normalizedUrl.getUrlString().contains("#comment"));
+            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/"), normalizedUrl.getUrlString());
+            assertTrue(normalizedUrl.getUrlString().contains("#comment"), normalizedUrl.getUrlString());
             assertTrue(stackOverflowNormalizedCommentLinkPattern.matcher(normalizedUrl.getUrlString()).matches());
         } else {
-            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/" + type +"/"));
+            assertTrue(normalizedUrl.getUrlString().startsWith("https://stackoverflow.com/" + type +"/"), normalizedUrl.getUrlString());
         }
     }
 }
