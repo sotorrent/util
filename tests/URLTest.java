@@ -4,7 +4,6 @@ import org.sotorrent.util.URL;
 import java.util.regex.Pattern;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.sotorrent.util.URL.validTopLevelDomains;
 
 class URLTest {
     private String[] stackOverflowAnswerLinkVariants = {
@@ -63,8 +62,8 @@ class URLTest {
 
     @Test
     void testLoadingTldList(){
-        assertNotNull(validTopLevelDomains);
-        assertTrue(validTopLevelDomains.size() > 0);
+        assertNotNull(URL.getValidTopLevelDomains());
+        assertTrue(URL.getValidTopLevelDomains().size() > 0);
     }
 
     @Test

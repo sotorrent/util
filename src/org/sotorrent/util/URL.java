@@ -37,14 +37,13 @@ public class URL  {
     private static final String completeDomainRegex = "[\\w\\-]+(?:(?:\\.[\\w\\-]+)+)";
     private static final String rootDomainRegex = "([\\w\\-]+\\.([\\w\\-]+))(?:[^\\w\\-.].*)?$";
     private static final String allowedCharacters = "\\w\\-.,@^=%&:/~+";
+    private static final String allowedCharactersExtended = allowedCharacters + "|()<>*";
     private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
     private static final String pathRegex = "/(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
-    private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
-    private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
     private static final Pattern completeDomainPattern;
     private static final Pattern rootDomainPattern;
-    public static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
-    public static final Pattern urlPattern;
+    private static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
+    private static final Pattern urlPattern;
 
     // regular expressions to match and normalize Stack Overflow links (use redundant escaping to be compatible with SQL)
     private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/(?:[a-zA-Z0-9\\-_#/\\\\?=+&%;]*[a-zA-Z0-9/])?)", Pattern.CASE_INSENSITIVE);
@@ -57,10 +56,10 @@ public class URL  {
 
     // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     private static final String topLevelDomainList = "tld-list.txt";
-    public static Set<String> validTopLevelDomains = new HashSet<>();
+    private static Set<String> validTopLevelDomains = new HashSet<>();
 
     static {
-        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
+        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(getQueryRegex())) + makeOptional(encloseInNonCapturingGroup(getFragmentIdentifierRegex()));
         urlPattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
         // pattern to extract the complate domain from a domain string
@@ -83,6 +82,36 @@ public class URL  {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    public static String getUrlRegex() {
+        return urlRegex;
+    }
+
+    public static Pattern getUrlPattern() {
+        return urlPattern;
+    }
+
+    public static Set<String> getValidTopLevelDomains() {
+        return validTopLevelDomains;
+    }
+
+    public static String getQueryRegex() {
+        return getQueryRegex(false);
+    }
+
+    public static String getQueryRegex(boolean additionalAllowedCharacters) {
+        String characters = additionalAllowedCharacters ? allowedCharactersExtended : allowedCharacters;
+        return "\\?[" + characters + "\\?]*";
+    }
+
+    public static String getFragmentIdentifierRegex() {
+        return getFragmentIdentifierRegex(false);
+    }
+
+    public static String getFragmentIdentifierRegex(boolean additionalAllowedCharacters) {
+        String characters = additionalAllowedCharacters ? allowedCharactersExtended : allowedCharacters;
+        return "#[" + characters + "?#!]+(?:" + bracketExpression + ")?";
     }
 
     private static String makeOptional(String regex) {
@@ -309,29 +338,33 @@ public class URL  {
     }
 
     public static URL getNormalizedStackOverflowLink(URL url) {
+        return getNormalizedStackOverflowLink(url.getUrlString());
+    }
+
+    public static URL getNormalizedStackOverflowLink(String url) {
         try {
-            Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url.getUrlString());
+            Matcher commentMatcher = stackOverflowCommentLinkPattern.matcher(url);
             if (commentMatcher.find()) {
                 return new URL("https://stackoverflow.com/" + commentMatcher.group(1)
                         + commentMatcher.group(2).toLowerCase());
             }
 
-            Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url.getUrlString());
+            Matcher shortAnswerMatcher = stackOverflowShortAnswerLinkPattern.matcher(url);
             if (shortAnswerMatcher.find()) {
                 return new URL("https://stackoverflow.com/a/" + shortAnswerMatcher.group(1));
             }
 
-            Matcher longAnswerMatcher = stackOverflowLongAnswerLinkPattern.matcher(url.getUrlString());
+            Matcher longAnswerMatcher = stackOverflowLongAnswerLinkPattern.matcher(url);
             if (longAnswerMatcher.find()) {
                 return new URL("https://stackoverflow.com/a/" + longAnswerMatcher.group(1));
             }
 
-            Matcher shortQuestionMatcher = stackOverflowShortQuestionLinkPattern.matcher(url.getUrlString());
+            Matcher shortQuestionMatcher = stackOverflowShortQuestionLinkPattern.matcher(url);
             if (shortQuestionMatcher.find()) {
                 return new URL("https://stackoverflow.com/q/" + shortQuestionMatcher.group(1));
             }
 
-            Matcher longQuestionMatcher = stackOverflowLongQuestionLinkPattern.matcher(url.getUrlString());
+            Matcher longQuestionMatcher = stackOverflowLongQuestionLinkPattern.matcher(url);
             if (longQuestionMatcher.find()) {
                 return new URL("https://stackoverflow.com/q/" + longQuestionMatcher.group(1));
             }
@@ -339,7 +372,7 @@ public class URL  {
             e.printStackTrace();
         }
 
-        logger.info("Normalization of link failed: " + url.getUrlString());
+        logger.info("Normalization of link failed: " + url);
         return null;
     }
 }
