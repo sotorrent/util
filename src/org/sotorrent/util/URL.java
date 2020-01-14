@@ -5,6 +5,7 @@ import com.google.common.base.CharMatcher;
 import java.io.*;
 import java.net.MalformedURLException;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Matcher;
@@ -37,29 +38,30 @@ public class URL  {
     private static final String completeDomainRegex = "[\\w\\-]+(?:(?:\\.[\\w\\-]+)+)";
     private static final String rootDomainRegex = "([\\w\\-]+\\.([\\w\\-]+))(?:[^\\w\\-.].*)?$";
     private static final String allowedCharacters = "\\w\\-.,@^=%&:/~+";
-    private static final String allowedCharactersExtended = allowedCharacters + "|()<>*";
     private static final String bracketExpression = "\\([" + allowedCharacters + "]+\\)";
     private static final String pathRegex = "/(?:[" + allowedCharacters + "]+)?(?:" + bracketExpression + ")?";
+    private static final String queryRegex = "\\?[" + allowedCharacters + "\\?]*";
+    private static final String fragmentIdentifierRegex = "#[" + allowedCharacters + "?#!]+(?:" + bracketExpression + ")?";
     private static final Pattern completeDomainPattern;
     private static final Pattern rootDomainPattern;
     private static final String urlRegex; // the regex string is needed for the Link classes in project so-posthistory-extractor
     private static final Pattern urlPattern;
 
     // regular expressions to match and normalize Stack Overflow links (use redundant escaping to be compatible with SQL)
-    private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/(?:[a-zA-Z0-9\\-_#/\\\\?=+&%;]*[a-zA-Z0-9/])?)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("(https?:\\/\\/(?:www.)?stackoverflow\\.com\\/search[^:]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/a\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/[\\d]+\\/[^\\s#]+#([\\d]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com/q/([\\d]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/questions\\/([\\d]+)", Pattern.CASE_INSENSITIVE);
-    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("https?:\\/\\/(?:www.)?stackoverflow\\.com\\/(questions\\/\\d+)\\/[^\\s\\/#]+(?:\\/\\d+)?(?:\\?[^\\s\\/#]+)?(#comment\\d+_\\d+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLinkPattern = Pattern.compile("(https?://(?:www.)?stackoverflow\\.com/(?:[a-zA-Z0-9\\-_#/\\\\?=+&%;]*[a-zA-Z0-9/])?)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowSearchLinkPattern = Pattern.compile("(https?://(?:www.)?stackoverflow\\.com/search[^:]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowShortAnswerLinkPattern = Pattern.compile("https?://(?:www.)?stackoverflow\\.com/a/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLongAnswerLinkPattern = Pattern.compile("https?://(?:www.)?stackoverflow\\.com/questions/[\\d]+/[^\\s#]+#([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowShortQuestionLinkPattern = Pattern.compile("https?://(?:www.)?stackoverflow\\.com/q/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowLongQuestionLinkPattern = Pattern.compile("https?://(?:www.)?stackoverflow\\.com/questions/([\\d]+)", Pattern.CASE_INSENSITIVE);
+    private static final Pattern stackOverflowCommentLinkPattern = Pattern.compile("https?://(?:www.)?stackoverflow\\.com/(questions/\\d+)/[^\\s/#]+(?:/\\d+)?(?:\\?[^\\s/#]+)?(#comment\\d+_\\d+)", Pattern.CASE_INSENSITIVE);
 
     // list downloaded from http://data.iana.org/TLD/tlds-alpha-by-domain.txt
     private static final String topLevelDomainList = "tld-list.txt";
     private static Set<String> validTopLevelDomains = new HashSet<>();
 
     static {
-        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(getQueryRegex())) + makeOptional(encloseInNonCapturingGroup(getFragmentIdentifierRegex()));
+        urlRegex = encloseInNonCapturingGroup(protocolRegex) + "://" + completeDomainRegex + makeOptional(encloseInNonCapturingGroup(pathRegex)) + makeOptional(encloseInNonCapturingGroup(queryRegex)) + makeOptional(encloseInNonCapturingGroup(fragmentIdentifierRegex));
         urlPattern = Pattern.compile(urlRegex, Pattern.CASE_INSENSITIVE);
 
         // pattern to extract the complate domain from a domain string
@@ -70,7 +72,7 @@ public class URL  {
 
         // read list with valid URIs
         try (BufferedReader reader = new BufferedReader(new InputStreamReader(
-                Thread.currentThread().getContextClassLoader().getResourceAsStream(topLevelDomainList)))) {
+                Objects.requireNonNull(Thread.currentThread().getContextClassLoader().getResourceAsStream(topLevelDomainList))))) {
             String line;
             while ((line = reader.readLine()) != null) {
                 // ignore comments
@@ -94,24 +96,6 @@ public class URL  {
 
     public static Set<String> getValidTopLevelDomains() {
         return validTopLevelDomains;
-    }
-
-    public static String getQueryRegex() {
-        return getQueryRegex(false);
-    }
-
-    public static String getQueryRegex(boolean additionalAllowedCharacters) {
-        String characters = additionalAllowedCharacters ? allowedCharactersExtended : allowedCharacters;
-        return "\\?[" + characters + "\\?]*";
-    }
-
-    public static String getFragmentIdentifierRegex() {
-        return getFragmentIdentifierRegex(false);
-    }
-
-    public static String getFragmentIdentifierRegex(boolean additionalAllowedCharacters) {
-        String characters = additionalAllowedCharacters ? allowedCharactersExtended : allowedCharacters;
-        return "#[" + characters + "?#!]+(?:" + bracketExpression + ")?";
     }
 
     private static String makeOptional(String regex) {
@@ -232,7 +216,7 @@ public class URL  {
 
         // remove leading slash
         if (path.startsWith("/")) {
-            path = path.substring(1, path.length());
+            path = path.substring(1);
         }
 
         // remove trailing slash
